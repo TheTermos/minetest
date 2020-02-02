@@ -84,12 +84,12 @@ private:
 	scene::IBillboardSceneNode *m_spritenode = nullptr;
 	scene::IDummyTransformationSceneNode *m_matrixnode = nullptr;
 	Nametag *m_nametag = nullptr;
-	v3f m_position = v3f(0.0f, 10.0f * BS, 0);
+	v3d m_position = v3d(0.0f, 10.0f * BS, 0);
 	v3f m_velocity;
 	v3f m_acceleration;
 	v3f m_rotation;
 	u16 m_hp = 1;
-	SmoothTranslator<v3f> pos_translator;
+	SmoothTranslator<v3d> pos_translator;
 	SmoothTranslatorWrappedv3f rot_translator;
 	// Spritesheet/animation stuff
 	v2f m_tx_size = v2f(1,1);
@@ -148,13 +148,13 @@ public:
 
 	void processInitData(const std::string &data);
 
-	bool getCollisionBox(aabb3f *toset) const;
+	bool getCollisionBox(aabb3d *toset) const;
 
 	bool collideWithObjects() const;
 
 	virtual bool getSelectionBox(aabb3f *toset) const;
 
-	const v3f getPosition() const;
+	const v3d getPosition() const;
 
 	void setPosition(const v3f &pos)
 	{

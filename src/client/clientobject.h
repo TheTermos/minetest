@@ -45,10 +45,10 @@ public:
 	virtual void updateLight(u8 light_at_pos) {}
 	virtual void updateLightNoCheck(u8 light_at_pos) {}
 	virtual v3s16 getLightPosition() { return v3s16(0, 0, 0); }
-	virtual bool getCollisionBox(aabb3f *toset) const { return false; }
+	virtual bool getCollisionBox(aabb3d *toset) const { return false; }
 	virtual bool getSelectionBox(aabb3f *toset) const { return false; }
 	virtual bool collideWithObjects() const { return false; }
-	virtual const v3f getPosition() const { return v3f(0.0f); }
+	virtual const v3d getPosition() const { return v3d(0.0f); }
 	virtual scene::ISceneNode *getSceneNode() const
 	{ return NULL; }
 	virtual scene::IAnimatedMeshSceneNode *getAnimatedMeshSceneNode() const
