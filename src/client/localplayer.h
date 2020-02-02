@@ -134,7 +134,7 @@ public:
 		m_sneak_node_exists = false;
 	}
 
-	v3f getPosition() const { return m_position; }
+	v3d getPosition() const { return m_position; }
 	v3f getEyePosition() const { return m_position + getEyeOffset(); }
 	v3f getEyeOffset() const;
 	void setEyeHeight(float eye_height) { m_eye_height = eye_height; }
@@ -163,7 +163,7 @@ private:
 		const v3f &position_before_move, const v3f &speed_before_move,
 		f32 pos_max_d);
 
-	v3f m_position;
+	v3d m_position;
 	v3s16 m_standing_node;
 
 	v3s16 m_sneak_node = v3s16(32767, 32767, 32767);

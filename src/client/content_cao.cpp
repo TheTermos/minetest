@@ -188,7 +188,7 @@ public:
 
 	void processMessage(const std::string &data);
 
-	bool getCollisionBox(aabb3f *toset) const { return false; }
+	bool getCollisionBox(aabb3d *toset) const { return false; }
 private:
 	scene::IMeshSceneNode *m_node;
 	v3f m_position;
@@ -316,7 +316,7 @@ GenericCAO::GenericCAO(Client *client, ClientEnvironment *env):
 	}
 }
 
-bool GenericCAO::getCollisionBox(aabb3f *toset) const
+bool GenericCAO::getCollisionBox(aabb3d *toset) const
 {
 	if (m_prop.physical)
 	{
@@ -401,7 +401,7 @@ bool GenericCAO::getSelectionBox(aabb3f *toset) const
 	return true;
 }
 
-const v3f GenericCAO::getPosition() const
+const v3d GenericCAO::getPosition() const
 {
 	if (!getParent())
 		return pos_translator.val_current;
@@ -957,7 +957,7 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 			box.MaxEdge *= BS;
 			collisionMoveResult moveresult;
 			f32 pos_max_d = BS*0.125; // Distance per iteration
-			v3f p_pos = m_position;
+			v3d p_pos = m_position;
 			v3f p_velocity = m_velocity;
 			moveresult = collisionMoveSimple(env,env->getGameDef(),
 					pos_max_d, box, m_prop.stepheight, dtime,

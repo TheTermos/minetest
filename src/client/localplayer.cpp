@@ -181,7 +181,7 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 	Map *map = &env->getMap();
 	const NodeDefManager *nodemgr = m_client->ndef();
 
-	v3f position = getPosition();
+	v3d position = getPosition();
 
 	// Copy parent position if local player is attached
 	if (getParent()) {
@@ -349,12 +349,12 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		If sneaking, keep on top of last walked node and don't fall off
 	*/
 	if (could_sneak && m_sneak_node_exists) {
-		const v3f sn_f = intToFloat(m_sneak_node, BS);
-		const v3f bmin = sn_f + m_sneak_node_bb_top.MinEdge;
-		const v3f bmax = sn_f + m_sneak_node_bb_top.MaxEdge;
-		const v3f old_pos = position;
-		const v3f old_speed = m_speed;
-		f32 y_diff = bmax.Y - position.Y;
+		const v3d sn_f = intToFloat(m_sneak_node, BS);
+		const v3d bmin = sn_f + m_sneak_node_bb_top.MinEdge;
+		const v3d bmax = sn_f + m_sneak_node_bb_top.MaxEdge;
+		const v3d old_pos = position;
+		const v3d old_speed = m_speed;
+		f64 y_diff = bmax.Y - position.Y;
 		m_standing_node = m_sneak_node;
 
 		// (BS * 0.6f) is the basic stepheight while standing on ground
@@ -766,7 +766,7 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 	Map *map = &env->getMap();
 	const NodeDefManager *nodemgr = m_client->ndef();
 
-	v3f position = getPosition();
+	v3d position = getPosition();
 
 	// Copy parent position if local player is attached
 	if (getParent()) {
@@ -869,14 +869,14 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 	if (control.sneak && m_sneak_node_exists &&
 			!(fly_allowed && player_settings.free_move) && !in_liquid &&
 			physics_override_sneak) {
-		f32 maxd = 0.5f * BS + sneak_max;
+		f64 maxd = 0.5f * BS + sneak_max;
 		v3f lwn_f = intToFloat(m_sneak_node, BS);
 		position.X = rangelim(position.X, lwn_f.X - maxd, lwn_f.X + maxd);
 		position.Z = rangelim(position.Z, lwn_f.Z - maxd, lwn_f.Z + maxd);
 
 		if (!is_climbing) {
 			// Move up if necessary
-			f32 new_y = (lwn_f.Y - 0.5f * BS) + m_sneak_node_bb_ymax;
+			f64 new_y = (lwn_f.Y - 0.5f * BS) + m_sneak_node_bb_ymax;
 			if (position.Y < new_y)
 				position.Y = new_y;
 			/*
@@ -893,7 +893,7 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 	float player_stepheight = touching_ground ? (BS * 0.6f) : (BS * 0.2f);
 
 	v3f accel_f;
-	const v3f initial_position = position;
+	const v3d initial_position = position;
 	const v3f initial_speed = m_speed;
 
 	collisionMoveResult result = collisionMoveSimple(env, m_client,
@@ -951,8 +951,8 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 			v3s16 p = pos_i_bottom + v3s16(x, 0, z);
 			v3f pf = intToFloat(p, BS);
 			v2f node_p2df(pf.X, pf.Z);
-			f32 distance_f = player_p2df.getDistanceFrom(node_p2df);
-			f32 max_axis_distance_f = MYMAX(
+			f64 distance_f = player_p2df.getDistanceFrom(node_p2df);
+			f64 max_axis_distance_f = MYMAX(
 				std::fabs(player_p2df.X - node_p2df.X),
 				std::fabs(player_p2df.Y - node_p2df.Y));
 
@@ -1145,7 +1145,7 @@ void LocalPlayer::handleAutojump(f32 dtime, Environment *env,
 	}
 
 	float jump_height = 1.1f; // TODO: better than a magic number
-	v3f jump_pos = initial_position + v3f(0.0f, jump_height * BS, 0.0f);
+	v3d jump_pos = initial_position + v3d(0.0f, jump_height * BS, 0.0f);
 	v3f jump_speed = initial_speed;
 
 	// try at peak of jump, zero step height
@@ -1154,9 +1154,9 @@ void LocalPlayer::handleAutojump(f32 dtime, Environment *env,
 
 	// see if we can get a little bit farther horizontally if we had
 	// jumped
-	v3f run_delta = m_position - initial_position;
+	v3d run_delta = m_position - initial_position;
 	run_delta.Y = 0.0f;
-	v3f jump_delta = jump_pos - initial_position;
+	v3d jump_delta = jump_pos - initial_position;
 	jump_delta.Y = 0.0f;
 	if (jump_delta.getLengthSQ() > run_delta.getLengthSQ() * 1.01f) {
 		m_autojump = true;

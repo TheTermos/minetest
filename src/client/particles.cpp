@@ -142,7 +142,7 @@ void Particle::step(float dtime)
 	m_time += dtime;
 	if (m_collisiondetection) {
 		aabb3f box = m_collisionbox;
-		v3f p_pos = m_pos * BS;
+		v3d p_pos = m_pos * BS;
 		v3f p_velocity = m_velocity * BS;
 		collisionMoveResult r = collisionMoveSimple(m_env, m_gamedef, BS * 0.5f,
 			box, 0.0f, dtime, &p_pos, &p_velocity, m_acceleration * BS, nullptr,

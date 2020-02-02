@@ -94,7 +94,7 @@ private:
 	video::SMaterial m_material;
 	v2f m_texpos;
 	v2f m_texsize;
-	v3f m_pos;
+	v3d m_pos;
 	v3f m_velocity;
 	v3f m_acceleration;
 	LocalPlayer *m_player;
