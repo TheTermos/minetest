@@ -30,7 +30,7 @@ public:
 	TestServerActiveObject(const v3f &p = v3f()) : ServerActiveObject(nullptr, p) {}
 	~TestServerActiveObject() = default;
 	ActiveObjectType getType() const override { return ACTIVEOBJECT_TYPE_TEST; }
-	bool getCollisionBox(aabb3f *toset) const override { return false; }
+	bool getCollisionBox(aabb3d *toset) const override { return false; }
 	bool getSelectionBox(aabb3f *toset) const override { return false; }
 	bool collideWithObjects() const override { return false; }
 };
