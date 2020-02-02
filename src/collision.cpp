@@ -38,7 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 struct NearbyCollisionInfo {
 	NearbyCollisionInfo(bool is_ul, bool is_obj, int bouncy,
-			const v3s16 &pos, const aabb3f &box) :
+			const v3s16 &pos, const aabb3d &box) :
 		is_unloaded(is_ul),
 		is_object(is_obj),
 		bouncy(bouncy),
@@ -51,7 +51,7 @@ struct NearbyCollisionInfo {
 	bool is_object;
 	int bouncy;
 	v3s16 position;
-	aabb3f box;
+	aabb3d box;
 };
 
 
@@ -60,16 +60,16 @@ struct NearbyCollisionInfo {
 // Returns -1 if no collision, 0 if X collision, 1 if Y collision, 2 if Z collision
 // The time after which the collision occurs is stored in dtime.
 CollisionAxis axisAlignedCollision(
-		const aabb3f &staticbox, const aabb3f &movingbox,
-		const v3f &speed, f32 d, f32 *dtime)
+		const aabb3d &staticbox, const aabb3d &movingbox,
+		const v3f &speed, f32 d, f64 *dtime)
 {
 	//TimeTaker tt("axisAlignedCollision");
 
-	f32 xsize = (staticbox.MaxEdge.X - staticbox.MinEdge.X) - COLL_ZERO;     // reduce box size for solve collision stuck (flying sand)
-	f32 ysize = (staticbox.MaxEdge.Y - staticbox.MinEdge.Y); // - COLL_ZERO; // Y - no sense for falling, but maybe try later
-	f32 zsize = (staticbox.MaxEdge.Z - staticbox.MinEdge.Z) - COLL_ZERO;
+	f64 xsize = (staticbox.MaxEdge.X - staticbox.MinEdge.X) - COLL_ZERO;     // reduce box size for solve collision stuck (flying sand)
+	f64 ysize = (staticbox.MaxEdge.Y - staticbox.MinEdge.Y); // - COLL_ZERO; // Y - no sense for falling, but maybe try later
+	f64 zsize = (staticbox.MaxEdge.Z - staticbox.MinEdge.Z) - COLL_ZERO;
 
-	aabb3f relbox(
+	aabb3d relbox(
 			movingbox.MinEdge.X - staticbox.MinEdge.X,
 			movingbox.MinEdge.Y - staticbox.MinEdge.Y,
 			movingbox.MinEdge.Z - staticbox.MinEdge.Z,
@@ -190,7 +190,7 @@ bool wouldCollideWithCeiling(
 	assert(y_increase >= 0);	// pre-condition
 
 	for (const auto &it : cinfo) {
-		const aabb3f &staticbox = it.box;
+		const aabb3d &staticbox = it.box;
 		if ((movingbox.MaxEdge.Y - d <= staticbox.MinEdge.Y) &&
 				(movingbox.MaxEdge.Y + y_increase > staticbox.MinEdge.Y) &&
 				(movingbox.MinEdge.X < staticbox.MaxEdge.X) &&
@@ -214,7 +214,7 @@ static inline void getNeighborConnectingFace(const v3s16 &p,
 collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 		f32 pos_max_d, const aabb3f &box_0,
 		f32 stepheight, f32 dtime,
-		v3f *pos_f, v3f *speed_f,
+		v3d *pos_f, v3f *speed_f,
 		v3f accel_f, ActiveObject *self,
 		bool collideWithObjects)
 {
@@ -324,16 +324,16 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 			n.getCollisionBoxes(gamedef->ndef(), &nodeboxes, neighbors);
 
 			// Calculate float position only once
-			v3f posf = intToFloat(p, BS);
+			v3d posf = intToFloat(p, BS);
 			for (auto box : nodeboxes) {
 				box.MinEdge += posf;
 				box.MaxEdge += posf;
-				cinfo.emplace_back(false, false, n_bouncy_value, p, box);
+				cinfo.emplace_back(false, false, n_bouncy_value, p, (aabb3d)box);
 			}
 		} else {
 			// Collide with unloaded nodes (position invalid) and loaded
 			// CONTENT_IGNORE nodes (position valid)
-			aabb3f box = getNodeBox(p, BS);
+			aabb3d box = getNodeBox(p, BS);
 			cinfo.emplace_back(true, false, 0, p, box);
 		}
 	}
@@ -398,8 +398,8 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 			ActiveObject *object = *iter;
 
 			if (object) {
-				aabb3f object_collisionbox;
-				if (object->getCollisionBox(&object_collisionbox) &&
+				aabb3d object_collisionbox;
+				if (object->getCollisionBox(&object_collisionbox) &&			// TODO change meths
 						object->collideWithObjects()) {
 					cinfo.emplace_back(false, true, 0, v3s16(), object_collisionbox);
 				}
@@ -415,12 +415,11 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 		Collision uncertainty radius
 		Make it a bit larger than the maximum distance of movement
 	*/
-	f32 d = pos_max_d * 1.1f;
-	// A fairly large value in here makes moving smoother
-	//f32 d = 0.15*BS;
+	//f32 d = pos_max_d * 1.1f;
 
-	// This should always apply, otherwise there are glitches
-	assert(d > pos_max_d);	// invariant
+	f32 d = 0.01f;	// Temporary fix, any nonzero d causes collision glitches, the more the greater it is.
+	// ultimately it has to be determined if any uncertainty is involved, and if it is, eliminated
+	// and d & pos_max_d params removed from function calls.
 
 	int loopcount = 0;
 
@@ -432,12 +431,12 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 			break;
 		}
 
-		aabb3f movingbox = box_0;
+		aabb3d movingbox = box_0;
 		movingbox.MinEdge += *pos_f;
 		movingbox.MaxEdge += *pos_f;
 
 		CollisionAxis nearest_collided = COLLISION_AXIS_NONE;
-		f32 nearest_dtime = dtime;
+		f64 nearest_dtime = dtime;
 		int nearest_boxindex = -1;
 
 		/*
@@ -450,7 +449,7 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 				continue;
 
 			// Find nearest collision of the two boxes (raytracing-like)
-			f32 dtime_tmp;
+			f64 dtime_tmp;
 			CollisionAxis collided = axisAlignedCollision(box_info.box,
 					movingbox, *speed_f, d, &dtime_tmp);
 

@@ -78,8 +78,8 @@ public:
 	/*
 		Some simple getters/setters
 	*/
-	v3f getBasePosition() const { return m_base_position; }
-	void setBasePosition(v3f pos){ m_base_position = pos; }
+	v3d getBasePosition() const { return m_base_position; }
+	void setBasePosition(v3d pos){ m_base_position = pos; }
 	ServerEnvironment* getEnv(){ return m_env; }
 
 	/*
@@ -252,7 +252,7 @@ protected:
 	static void registerType(u16 type, Factory f);
 
 	ServerEnvironment *m_env;
-	v3f m_base_position;
+	v3d m_base_position;
 	std::unordered_set<u32> m_attached_particle_spawners;
 
 private:

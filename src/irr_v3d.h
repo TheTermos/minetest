@@ -21,7 +21,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irrlichttypes.h"
 
-#include <vector3d.h>
+//#include <vector3d.h>
+#include "irrlicht_changes/vector3d.h"
 
 typedef core::vector3df v3f;
 typedef core::vector3d<double> v3d;

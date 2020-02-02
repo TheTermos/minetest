@@ -93,7 +93,7 @@ public:
 		}
 	}
 
-	bool getCollisionBox(aabb3f *toset) const { return false; }
+	bool getCollisionBox(aabb3d *toset) const { return false; }
 
 	virtual bool getSelectionBox(aabb3f *toset) const { return false; }
 
@@ -434,7 +434,7 @@ void LuaEntitySAO::step(float dtime, bool send_recommended)
 			box.MaxEdge *= BS;
 			collisionMoveResult moveresult;
 			f32 pos_max_d = BS*0.25; // Distance per iteration
-			v3f p_pos = m_base_position;
+			v3d p_pos = m_base_position;
 			v3f p_velocity = m_velocity;
 			v3f p_acceleration = m_acceleration;
 			moveresult = collisionMoveSimple(m_env, m_env->getGameDef(),
@@ -817,7 +817,7 @@ void LuaEntitySAO::sendPosition(bool do_interpolate, bool is_movement_end)
 	m_messages_out.push(aom);
 }
 
-bool LuaEntitySAO::getCollisionBox(aabb3f *toset) const
+bool LuaEntitySAO::getCollisionBox(aabb3d *toset) const
 {
 	if (m_prop.physical)
 	{
@@ -869,7 +869,6 @@ PlayerSAO::PlayerSAO(ServerEnvironment *env_, RemotePlayer *player_, session_t p
 	m_prop.hp_max = PLAYER_MAX_HP_DEFAULT;
 	m_prop.breath_max = PLAYER_MAX_BREATH_DEFAULT;
 	m_prop.physical = false;
-	m_prop.weight = 75;
 	m_prop.collisionbox = aabb3f(-0.3f, 0.0f, -0.3f, 0.3f, 1.77f, 0.3f);
 	m_prop.selectionbox = aabb3f(-0.3f, 0.0f, -0.3f, 0.3f, 1.77f, 0.3f);
 	m_prop.pointable = true;
@@ -1506,7 +1505,7 @@ bool PlayerSAO::checkMovementCheat()
 	return cheated;
 }
 
-bool PlayerSAO::getCollisionBox(aabb3f *toset) const
+bool PlayerSAO::getCollisionBox(aabb3d *toset) const
 {
 	//update collision box
 	toset->MinEdge = m_prop.collisionbox.MinEdge * BS;

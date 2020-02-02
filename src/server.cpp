@@ -1798,7 +1798,7 @@ void Server::SendMovePlayer(session_t peer_id)
 	assert(sao);
 
 	NetworkPacket pkt(TOCLIENT_MOVE_PLAYER, sizeof(v3f) + sizeof(f32) * 2, peer_id);
-	pkt << sao->getBasePosition() << sao->getLookPitch() << sao->getRotation().Y;
+	pkt << (v3f)sao->getBasePosition() << sao->getLookPitch() << sao->getRotation().Y;	//objpos2f64
 
 	{
 		v3f pos = sao->getBasePosition();
