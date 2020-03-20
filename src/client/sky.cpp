@@ -253,34 +253,10 @@ void Sky::render()
 			driver->setMaterial(m_materials[1]);
 			for (u32 j = 0; j < 4; j++) {
 				video::SColor c = cloudyfogcolor.getInterpolated(m_skycolor, 0.45);
-				vertices[0] = video::S3DVertex(-1, 0.08, -1, 0, 0, 1, c, t, t);
-				vertices[1] = video::S3DVertex( 1, 0.08, -1, 0, 0, 1, c, o, t);
-				vertices[2] = video::S3DVertex( 1, 0.12, -1, 0, 0, 1, c, o, o);
-				vertices[3] = video::S3DVertex(-1, 0.12, -1, 0, 0, 1, c, t, o);
-				for (video::S3DVertex &vertex : vertices) {
-					if (j == 0)
-						// Don't switch
-						{}
-					else if (j == 1)
-						// Switch from -Z (south) to +X (east)
-						vertex.Pos.rotateXZBy(90);
-					else if (j == 2)
-						// Switch from -Z (south) to -X (west)
-						vertex.Pos.rotateXZBy(-90);
-					else
-						// Switch from -Z (south) to +Z (north)
-						vertex.Pos.rotateXZBy(-180);
-				}
-				driver->drawIndexedTriangleFan(&vertices[0], 4, indices, 2);
-			}
-
-			// Draw far cloudy fog thing at and below all horizons
-			for (u32 j = 0; j < 4; j++) {
-				video::SColor c = cloudyfogcolor;
-				vertices[0] = video::S3DVertex(-1, -1.0, -1, 0, 0, 1, c, t, t);
-				vertices[1] = video::S3DVertex( 1, -1.0, -1, 0, 0, 1, c, o, t);
-				vertices[2] = video::S3DVertex( 1, 0.08, -1, 0, 0, 1, c, o, o);
-				vertices[3] = video::S3DVertex(-1, 0.08, -1, 0, 0, 1, c, t, o);
+				vertices[0] = video::S3DVertex(-1, -0.02, -1, 0, 0, 1, m_bgcolor, t, t);
+				vertices[1] = video::S3DVertex( 1, -0.02, -1, 0, 0, 1, m_bgcolor, o, t);
+				vertices[2] = video::S3DVertex( 1, 0.45, -1, 0, 0, 1, m_skycolor, o, o);
+				vertices[3] = video::S3DVertex(-1, 0.45, -1, 0, 0, 1, m_skycolor, t, o);
 				for (video::S3DVertex &vertex : vertices) {
 					if (j == 0)
 						// Don't switch
@@ -444,27 +420,40 @@ void Sky::update(float time_of_day, float time_brightness,
 
 	m_clouds_visible = true;
 	float color_change_fraction = 0.98f;
+	const float time_dawn_start = 0.17f;	//0450
+	const float time_dawn_end = 0.292f;		//0700
+	const float time_dusk_start = 0.75f;	//1830
+	const float time_dusk_end = 0.833f;		//2000
+
 	if (sunlight_seen) {
+		if (m_time_of_day >= time_dawn_start && m_time_of_day <= time_dawn_end) {	//dawn
+			color_change_fraction =  1.0f - (m_time_of_day - time_dawn_start) / (time_dawn_end - time_dawn_start);
+			m_skycolor_bright_f = skycolor_bright_night_f.getInterpolated(skycolor_bright_normal_f, color_change_fraction);
+			m_bgcolor_bright_f = bgcolor_bright_night_f.getInterpolated(bgcolor_bright_normal_f, color_change_fraction);
+		}
+		else {
+			if (m_time_of_day >= time_dusk_start && m_time_of_day <= time_dusk_end) {	//dusk
+				color_change_fraction =  1.0f - (m_time_of_day - time_dusk_start) / (time_dusk_end - time_dusk_start);
+				m_skycolor_bright_f = skycolor_bright_normal_f.getInterpolated(skycolor_bright_night_f, color_change_fraction);
+				m_bgcolor_bright_f = bgcolor_bright_normal_f.getInterpolated(bgcolor_bright_night_f, color_change_fraction);
+			}
+			else {
+				if (m_time_of_day > time_dawn_end && m_time_of_day < time_dusk_start) {	//day
+					m_skycolor_bright_f = skycolor_bright_normal_f;
+					m_bgcolor_bright_f = bgcolor_bright_normal_f;
+				}
+				else {	//night
+					m_skycolor_bright_f = skycolor_bright_night_f;
+					m_bgcolor_bright_f = bgcolor_bright_night_f;
+				}
+			}
+		}
+
+		color_change_fraction = 0.98f;
 		if (is_dawn) { // Dawn
-			m_bgcolor_bright_f = m_bgcolor_bright_f.getInterpolated(
-				bgcolor_bright_dawn_f, color_change_fraction);
-			m_skycolor_bright_f = m_skycolor_bright_f.getInterpolated(
-				skycolor_bright_dawn_f, color_change_fraction);
 			m_cloudcolor_bright_f = m_cloudcolor_bright_f.getInterpolated(
 				cloudcolor_bright_dawn_f, color_change_fraction);
 		} else {
-			if (time_brightness < 0.13f) { // Night
-				m_bgcolor_bright_f = m_bgcolor_bright_f.getInterpolated(
-					bgcolor_bright_night_f, color_change_fraction);
-				m_skycolor_bright_f = m_skycolor_bright_f.getInterpolated(
-					skycolor_bright_night_f, color_change_fraction);
-			} else { // Day
-				m_bgcolor_bright_f = m_bgcolor_bright_f.getInterpolated(
-					bgcolor_bright_normal_f, color_change_fraction);
-				m_skycolor_bright_f = m_skycolor_bright_f.getInterpolated(
-					skycolor_bright_normal_f, color_change_fraction);
-			}
-
 			m_cloudcolor_bright_f = m_cloudcolor_bright_f.getInterpolated(
 				cloudcolor_bright_normal_f, color_change_fraction);
 		}
@@ -481,17 +470,17 @@ void Sky::update(float time_of_day, float time_brightness,
 	video::SColor bgcolor_bright = m_bgcolor_bright_f.toSColor();
 	m_bgcolor = video::SColor(
 		255,
-		bgcolor_bright.getRed() * m_brightness,
-		bgcolor_bright.getGreen() * m_brightness,
-		bgcolor_bright.getBlue() * m_brightness
+		bgcolor_bright.getRed(),
+		bgcolor_bright.getGreen(),
+		bgcolor_bright.getBlue()
 	);
 
 	video::SColor skycolor_bright = m_skycolor_bright_f.toSColor();
 	m_skycolor = video::SColor(
 		255,
-		skycolor_bright.getRed() * m_brightness,
-		skycolor_bright.getGreen() * m_brightness,
-		skycolor_bright.getBlue() * m_brightness
+		skycolor_bright.getRed(),
+		skycolor_bright.getGreen(),
+		skycolor_bright.getBlue()
 	);
 
 	// Horizon coloring based on sun and moon direction during sunset and sunrise
