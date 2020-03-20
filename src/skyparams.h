@@ -76,14 +76,14 @@ public:
 	{
 		SkyColor sky;
 		// Horizon colors
-		sky.day_horizon = video::SColor(255, 155, 193, 240);
+		sky.day_horizon = video::SColor(255, 149, 219, 255);
 		sky.indoors = video::SColor(255, 100, 100, 100);
 		sky.dawn_horizon = video::SColor(255, 186, 193, 240);
-		sky.night_horizon = video::SColor(255, 64, 144, 255);
+		sky.night_horizon = video::SColor(255, 2, 3, 15);
 		// Sky colors
-		sky.day_sky = video::SColor(255, 140, 186, 250);
+		sky.day_sky = video::SColor(255, 101, 188, 253);
 		sky.dawn_sky = video::SColor(255, 180, 186, 250);
-		sky.night_sky = video::SColor(255, 0, 107, 255);
+		sky.night_sky = video::SColor(255, 4, 8, 38);
 		return sky;
 	}
 
